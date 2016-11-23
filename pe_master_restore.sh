@@ -1,7 +1,28 @@
 #!/bin/bash
 # Perform a restore of a PE Master
 #  Should be used to perform a restore from files created by pe_master_backup.sh
-#  Tested with a standard install of PE 2016.2.1
+#
+# Prerequisites
+#  You must perform the following actions before restoring
+#   - Uninstall PE with ./puppet-enterprise-uninstaller -d -p
+#   - Re-Install PE with the original pe.conf file
+#   - Execute this resotore
+#
+#  Process being followed:
+#   - Stop Puppet Services
+#   - Restore Database
+#   - Clear install files
+#   - Restore required files from archive
+#   - Clear Catalog Cache
+#   - Chown restored files
+#   - Restart Puppet Services
+#
+#  Tested with the following PE versions
+#   - 2016.2.1
+#   - 2016.4.2
+#  Usage: 
+#  Written by: Kalen Peterson <kpeterson@forsythe.com>
+#  Created on: 11/23/2016
 
 FILE_RESTORE=$1
 SQL_RESTORE_DIR="/tmp"
