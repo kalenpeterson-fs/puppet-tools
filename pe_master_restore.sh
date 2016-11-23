@@ -3,8 +3,9 @@
 #  Should be used to perform a restore from files created by pe_master_backup.sh
 #  Tested with a standard install of PE 2016.2.1
 
-SQL_RESTORE=$1
-FILE_RESTORE=$2
+FILE_RESTORE=$1
+SQL_RESTORE_DIR="/tmp"
+SQL_RESTORE_FILE="pe_sql_backup.sql"
 
 if [[ `id -u` -ne 0 ]]; then
   echo "You must be root!"
@@ -18,6 +19,13 @@ elif [[ ! -s "$FILE_RESTORE" ]]; then
   echo "TAR File '$FILE_RESTORE' not provided or is empty"
   exit 1
 fi
+
+# Cleanup temp files
+rm -f "$SQL_RESTORE_DIR/$SQL_RESTORE_FILE"
+function F_Exit {
+  rm -f "$SQL_RESTORE_DIR/$SQL_RESTORE_FILE"
+}
+trap F_Exit EXIT
 
 echo
 echo "Starting PE Master Restore"
@@ -37,7 +45,8 @@ puppet resource service pe-console-services ensure=stopped
 # Restore Database
 echo
 echo "Restoring Database"
-sudo -u pe-postgres /opt/puppetlabs/server/apps/postgresql/bin/psql < "$SQL_RESTORE"
+tar -xzf "$FILE_RESTORE" -C "$SQL_RESTORE_DIR" "$SQL_RESTORE_FILE"
+sudo -u pe-postgres /opt/puppetlabs/server/apps/postgresql/bin/psql < "$SQL_RESTORE_DIR/$SQL_RESTORE_FILE"
 
 # Clear install files
 echo
