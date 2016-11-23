@@ -1,14 +1,22 @@
 #!/bin/bash
 #  Perform a backup of a PE Master
+#   These backups can be restored by the pe_master_restore.sh script
+#   Must be run on the PE Master (or Master of Masters)
+#
+# Prerequisites
+#  You must have a functinall master installed and running
+#
 #  Process being followed
 #   - Keep a copy of /etc/puppetlabs in $BACKUP_DIR
 #   - Archive all config files, certificates, and keys
-#   - Backup the PuppetDB
-#  Backups can be restored with pe_master_restore.sh
+#   - Backup the PuppetDB and add to archive
+#
 #  Tested with the following PE versions
 #   - 2016.2.1
 #   - 2016.4.2
-#  Usage: 
+#
+#  Usage: See F_Usage
+#
 #  Written by: Kalen Peterson <kpeterson@forsythe.com> 
 #  Created on: 11/23/2016
 
@@ -29,9 +37,15 @@ F_Usage () {
   echo
   echo "This script will backup a PE Master to an archive"
   echo "from which it can be restored." 
+  echo
+  echo "It must be run from the PE Master or Master of Masters."
   exit 2
 }
 
+# Perform cleanup on script exit
+F_Exit () {
+  rm -f "$BACKUP_DIR/$SQL_FILE"
+}
 
 ##############
 ## Validation
@@ -57,9 +71,7 @@ fi
 
 # Cleanup temp files
 rm -f "$BACKUP_DIR/$SQL_FILE"
-F_Exit () {
-  rm -f "$BACKUP_DIR/$SQL_FILE"
-}
+trap F_Exit EXIT
 
 ##################
 ## Perform Backup

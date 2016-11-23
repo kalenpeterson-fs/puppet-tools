@@ -1,12 +1,15 @@
 #!/bin/bash
 # Perform a restore of a PE Master
 #  Should be used to perform a restore from files created by pe_master_backup.sh
+#  Must be run on the PE Master (or Master of Masters)
 #
 # Prerequisites
 #  You must perform the following actions before restoring
-#   - Uninstall PE with ./puppet-enterprise-uninstaller -d -p
+#   - Uninstall PE on the Master with:
+#       ./puppet-enterprise-uninstaller -d -p
 #   - Re-Install PE with the original pe.conf file
-#   - Execute this resotore
+#       ./puppet-enterprise-installer -c /etc/puppetlabs/enterprise/conf.d/pe.conf
+#   - Execute this resotore script
 #
 #  Process being followed:
 #   - Stop Puppet Services
@@ -20,38 +23,70 @@
 #  Tested with the following PE versions
 #   - 2016.2.1
 #   - 2016.4.2
-#  Usage: 
+#
+#  Usage: See F_Usage
+#
 #  Written by: Kalen Peterson <kpeterson@forsythe.com>
 #  Created on: 11/23/2016
 
-FILE_RESTORE=$1
-SQL_RESTORE_DIR="/tmp"
-SQL_RESTORE_FILE="pe_sql_backup.sql"
+# Set Initial Variable
+ARCHIVE_FILE="$1"
+TMP_RESTORE_DIR="$2"
+TMP_SQL_FILE="pe_sql_backup.sql"
 
+#############
+## Functions
+#############
+# Print Script Usage
+F_Usage () {
+  echo
+  echo "Usage: pe_master_restore.sh /path/to/pe_backup.tar.gz [/tmp/dir]"
+  echo
+  echo "This script will restore a PE Master Backup archive created with"
+  echo "the pe_master_backup.sh script."
+  echo
+  echo "It must be run on the PE Master or Master of Masters."
+  echo
+  echo "If a temporary directory is not specified, /tmp will be used to"
+  echo "extract the sql backup for restore."
+  exit 2
+}
+
+# Perform cleanup on script exit
+F_Exit () {
+  rm -f "$TMP_RESTORE_DIR/$TMP_SQL_FILE"
+}
+
+
+##############
+## Validation
+##############
+# Validate that we are root
 if [[ `id -u` -ne 0 ]]; then
   echo "You must be root!"
   exit 1
 fi
 
-if [[ ! -s "$SQL_RESTORE" ]]; then
-  echo "SQL File '$SQL_RESTORE' not provided or is empty"
-  exit 1
-elif [[ ! -s "$FILE_RESTORE" ]]; then
-  echo "TAR File '$FILE_RESTORE' not provided or is empty"
-  exit 1
+# Validate that an archive file was provided
+if [[ -z "$ARCHIVE_FILE" ]]; then
+  echo
+  echo "ERROR: No archive file provided!"
+  F_Usage
+fi
+
+# Warn the user if they did not provide a temp directory
+if [[ -z "$TMP_RESTORE_DIR" ]]; then
+  echo "WARN: No temp directory provided, using /tmp!"
+  TMP_RESTORE_DIR=/tmp
 fi
 
 # Cleanup temp files
-rm -f "$SQL_RESTORE_DIR/$SQL_RESTORE_FILE"
-function F_Exit {
-  rm -f "$SQL_RESTORE_DIR/$SQL_RESTORE_FILE"
-}
 trap F_Exit EXIT
 
 echo
 echo "Starting PE Master Restore"
-echo "SQL File is: $SQL_RESTORE"
-echo "TAR File is: $FILE_RESTORE"
+echo "SQL File is: $TMP_RESTORE_DIR/$TMP_SQL_FILE"
+echo "TAR File is: $ARCHIVE_FILE"
 
 # Stop Puppet Services
 echo
@@ -66,8 +101,9 @@ puppet resource service pe-console-services ensure=stopped
 # Restore Database
 echo
 echo "Restoring Database"
-tar -xzf "$FILE_RESTORE" -C "$SQL_RESTORE_DIR" "$SQL_RESTORE_FILE"
-sudo -u pe-postgres /opt/puppetlabs/server/apps/postgresql/bin/psql < "$SQL_RESTORE_DIR/$SQL_RESTORE_FILE"
+tar -xzf "$ARCHIVE_FILE" -C "$TMP_RESTORE_DIR" "$TMP_SQL_FILE"
+sudo -u pe-postgres /opt/puppetlabs/server/apps/postgresql/bin/psql < \
+  "$TMP_RESTORE_DIR/$TMP_SQL_FILE"
 
 # Clear install files
 echo
@@ -80,11 +116,11 @@ rm -rf /opt/puppetlabs/server/data/console-services/certs/*
 # Restore required files from archive
 echo
 echo "Restoring files from archive"
-tar -xzf "$FILE_RESTORE" -C / etc/puppetlabs/puppet/puppet.conf
-tar -xzf "$FILE_RESTORE" -C / etc/puppetlabs/puppet/ssl
-tar -xzf "$FILE_RESTORE" -C / etc/puppetlabs/puppetdb/ssl
-tar -xzf "$FILE_RESTORE" -C / opt/puppetlabs/server/data/postgresql/9.4/data/certs
-tar -xzf "$FILE_RESTORE" -C / opt/puppetlabs/server/data/console-services/certs
+tar -xzf "$ARCHIVE_FILE" -C / etc/puppetlabs/puppet/puppet.conf
+tar -xzf "$ARCHIVE_FILE" -C / etc/puppetlabs/puppet/ssl
+tar -xzf "$ARCHIVE_FILE" -C / etc/puppetlabs/puppetdb/ssl
+tar -xzf "$ARCHIVE_FILE" -C / opt/puppetlabs/server/data/postgresql/9.4/data/certs
+tar -xzf "$ARCHIVE_FILE" -C / opt/puppetlabs/server/data/console-services/certs
 
 # Clear Cache
 echo
