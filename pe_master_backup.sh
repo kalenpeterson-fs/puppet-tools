@@ -3,7 +3,7 @@
 #  Backups can be restored with pe_master_restore.sh
 #  Tested with a standard install of PE 2016.2.1
 
-BACKUP_DIR=/tmp/backups
+BACKUP_DIR=/var/puppet/backups
 TIMESTAMP=`date +"%m%d%Y-%H%M%S"`
 
 if [[ `id -u` -ne 0 ]]; then
@@ -15,7 +15,7 @@ if [[ ! -d "$BACKUP_DIR" ]]; then
   mkdir -p "$BACKUP_DIR"
 fi
 
-# Keep a copy of /etc/puppetlabs in /tmp/backups
+# Keep a copy of /etc/puppetlabs in $BACKUP_DIR
 echo
 echo "Start raw copy of /etc/puppetlabs"
 cp -rp /etc/puppetlabs "$BACKUP_DIR"
