@@ -1,7 +1,16 @@
 #!/bin/bash
-# Perform a backup of a PE Master
+#  Perform a backup of a PE Master
+#  Process being followed
+#   - Keep a copy of /etc/puppetlabs in $BACKUP_DIR
+#   - Archive all config files, certificates, and keys
+#   - Backup the PuppetDB
 #  Backups can be restored with pe_master_restore.sh
-#  Tested with a standard install of PE 2016.2.1
+#  Tested with the following PE versions
+#   - 2016.2.1
+#   - 2016.4.2
+#  Usage: 
+#  Written by: Kalen Peterson <kpeterson@forsythe.com> 
+#  Created on: 11/23/2016
 
 BACKUP_DIR=/var/puppet/backups
 TIMESTAMP=`date +"%m%d%Y-%H%M%S"`
