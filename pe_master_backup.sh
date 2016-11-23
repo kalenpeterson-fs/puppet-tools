@@ -24,7 +24,10 @@ cp -rp /etc/puppetlabs "$BACKUP_DIR"
 echo
 echo "Starting Archive of files"
 FILE_BACKUP="$BACKUP_DIR/file_backup.$TIMESTAMP.tar.gz"
-tar -czf "$FILE_BACKUP" /etc/puppetlabs /opt/puppetlabs/server/data/console-services/certs /opt/puppetlabs/server/data/postgresql/9.4/data/certs
+tar -czf "$FILE_BACKUP" \
+  /etc/puppetlabs \
+  /opt/puppetlabs/server/data/console-services/certs \
+  /opt/puppetlabs/server/data/postgresql/9.4/data/certs
 chmod 640 "$FILE_BACKUP"
 
 # Backup the PuppetDB
