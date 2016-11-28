@@ -29,7 +29,8 @@
 #  Written by: Kalen Peterson <kpeterson@forsythe.com>
 #  Created on: 11/23/2016
 
-# Set Initial Variable
+# Set the expected name of the PE DB Backup file in the archive.
+# *NOTE* Do NOT modify this unless you have also changed it in the pe_master_backup.sh script
 TMP_SQL_FILE="pe_sql_backup.sql"
 
 #############
@@ -38,11 +39,11 @@ TMP_SQL_FILE="pe_sql_backup.sql"
 # Print Script Usage
 F_Usage () {
   echo
-  echo "Usage: pe_master_restore.sh -f FILE [-t DIRECTORY] -h"
+  echo "Usage: pe_master_restore.sh -f FILE [-d DIRECTORY] -h"
   echo
   echo "Options:"
   echo "  -f    *Required* Specify the pe_backup archive file to restore"
-  echo "  -t    *Optional* Specity the temporary working directory to extract the sql backup"
+  echo "  -d    *Optional* Specity the temporary working directory to extract the sql backup"
   echo "  -h    Print this usage info"
   echo 
   echo "This script will restore a PE Master Backup archive created with the pe_master_backup.sh script."
@@ -64,12 +65,12 @@ F_Exit () {
 ## Arguments
 #############
 # Manage Options
-while getopts :f:t:h FLAG; do
+while getopts :f:d:h FLAG; do
   case $FLAG in
     f)  # Set the Restore File Location
         ARCHIVE_FILE=$OPTARG
         ;;
-    t)  # Set the temporary working dir
+    d)  # Set the temporary working dir
         TMP_RESTORE_DIR=$OPTARG
         ;;
     h)  # Show Usage
@@ -106,6 +107,20 @@ if [[ -z "$TMP_RESTORE_DIR" ]]; then
   TMP_RESTORE_DIR=/tmp
 fi
 
+# Validate that the archive exists
+if [[ ! -s "$ARCHIVE_FILE" ]]; then
+  echo
+  echo "ERROR: Archive file '$ARCHIVE_FILE' does not exist or is empty!"
+  F_Usage
+fi
+
+# Validate that that temp directory exists
+if [[ ! -d "$TMP_RESTORE_DIR" ]]; then
+  echo
+  echo "ERROR: Temp directory '$TMP_RESTORE_DIR' does not exist!"
+  F_Usage
+fi
+
 
 
 ########
@@ -118,7 +133,6 @@ echo
 echo "Starting PE Master Restore"
 echo "SQL File is: $TMP_RESTORE_DIR/$TMP_SQL_FILE"
 echo "TAR File is: $ARCHIVE_FILE"
-exit 1
 
 # Stop Puppet Services
 echo
