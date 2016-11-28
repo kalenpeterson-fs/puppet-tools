@@ -21,10 +21,10 @@
 #  Created on: 11/23/2016
 
 # Set Initial Variables
-BACKUP_DIR="$1"
 TIMESTAMP=`date +"%m%d%Y-%H%M%S"`
 ARCHIVE_FILE="pe_backup.$TIMESTAMP.tar.gz"
 SQL_FILE="pe_sql_backup.sql"
+
 
 
 #############
@@ -46,6 +46,29 @@ F_Usage () {
 F_Exit () {
   rm -f "$BACKUP_DIR/$SQL_FILE"
 }
+
+
+
+#############
+## Arguments
+#############
+# Manage Options
+while getopts :d:h FLAG; do
+  case $FLAG in
+    d)  # Set the Restore File Location
+        BACKUP_DIR=$OPTARG
+        ;;
+    h)  # Show Usage
+        F_Usage
+        ;;
+   /?)  # Unknown Option, show usage
+        echo "ERROR: Unknown option '$FLAG $OPTARG'"
+        F_Usage
+        ;;
+  esac
+done
+
+
 
 ##############
 ## Validation
@@ -72,6 +95,8 @@ fi
 # Cleanup temp files
 rm -f "$BACKUP_DIR/$SQL_FILE"
 trap F_Exit EXIT
+
+
 
 ##################
 ## Perform Backup
