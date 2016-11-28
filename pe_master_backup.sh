@@ -33,7 +33,10 @@ SQL_FILE="pe_sql_backup.sql"
 # Print Script Usage
 F_Usage () {
   echo
-  echo "Usage: pe_master_backup.sh /path/to/backup/dir"
+  echo "Usage: pe_master_backup.sh -d DIRECTORY"
+  echo
+  echo "Options:"
+  echo "  -d    *Required* Specify a directory to store backups"
   echo
   echo "This script will backup a PE Master to an archive"
   echo "from which it can be restored." 
