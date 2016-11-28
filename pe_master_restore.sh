@@ -30,8 +30,6 @@
 #  Created on: 11/23/2016
 
 # Set Initial Variable
-ARCHIVE_FILE="$1"
-TMP_RESTORE_DIR="$2"
 TMP_SQL_FILE="pe_sql_backup.sql"
 
 #############
@@ -40,8 +38,13 @@ TMP_SQL_FILE="pe_sql_backup.sql"
 # Print Script Usage
 F_Usage () {
   echo
-  echo "Usage: pe_master_restore.sh /path/to/pe_backup.tar.gz [/tmp/dir]"
+  echo "Usage: pe_master_restore.sh -f FILE [-t DIRECTORY] -h"
   echo
+  echo "Options:"
+  echo "  -f    *Required* Specify the pe_backup archive file to restore"
+  echo "  -t    *Optional* Specity the temporary working directory to extract the sql backup"
+  echo "  -h    Print this usage info"
+  echo 
   echo "This script will restore a PE Master Backup archive created with"
   echo "the pe_master_backup.sh script."
   echo
@@ -56,6 +59,31 @@ F_Usage () {
 F_Exit () {
   rm -f "$TMP_RESTORE_DIR/$TMP_SQL_FILE"
 }
+
+
+
+#############
+## Arguments
+#############
+# Manage Options
+while getopts :f:t:h FLAG; do
+  case $FLAG in
+    f)  # Set the Restore File Location
+        ARCHIVE_FILE=$OPTARG
+        ;;
+    t)  # Set the temporary working dir
+        TMP_RESTORE_DIR=$OPTARG
+        ;;
+    h)  # Show Usage
+        F_Usage
+        ;;
+   /?)  # Unknown Option, show usage
+        echo "ERROR: Unknown option '$FLAG $OPTARG'"
+        F_Usage
+        ;;
+  esac
+done
+
 
 
 ##############
@@ -80,6 +108,11 @@ if [[ -z "$TMP_RESTORE_DIR" ]]; then
   TMP_RESTORE_DIR=/tmp
 fi
 
+
+
+########
+## Main
+########
 # Cleanup temp files
 trap F_Exit EXIT
 
@@ -87,6 +120,7 @@ echo
 echo "Starting PE Master Restore"
 echo "SQL File is: $TMP_RESTORE_DIR/$TMP_SQL_FILE"
 echo "TAR File is: $ARCHIVE_FILE"
+exit 1
 
 # Stop Puppet Services
 echo
@@ -150,3 +184,4 @@ puppet resource service puppet ensure=running
 
 echo
 echo "PE Master Restore complete"
+exit 0
