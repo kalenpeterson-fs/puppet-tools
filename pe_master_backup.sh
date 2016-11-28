@@ -37,6 +37,7 @@ F_Usage () {
   echo
   echo "Options:"
   echo "  -d    *Required* Specify a directory to store backups"
+  echo "  -h    Print this usage info"
   echo
   echo "This script will backup a PE Master to an archive from which it can be restored."
   echo
