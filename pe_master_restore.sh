@@ -45,13 +45,11 @@ F_Usage () {
   echo "  -t    *Optional* Specity the temporary working directory to extract the sql backup"
   echo "  -h    Print this usage info"
   echo 
-  echo "This script will restore a PE Master Backup archive created with"
-  echo "the pe_master_backup.sh script."
+  echo "This script will restore a PE Master Backup archive created with the pe_master_backup.sh script."
   echo
   echo "It must be run on the PE Master or Master of Masters."
   echo
-  echo "If a temporary directory is not specified, /tmp will be used to"
-  echo "extract the sql backup for restore."
+  echo "If a temporary directory is not specified, /tmp will be used to extract the sql backup for restore."
   exit 2
 }
 
