@@ -38,8 +38,7 @@ F_Usage () {
   echo "Options:"
   echo "  -d    *Required* Specify a directory to store backups"
   echo
-  echo "This script will backup a PE Master to an archive"
-  echo "from which it can be restored." 
+  echo "This script will backup a PE Master to an archive from which it can be restored."
   echo
   echo "It must be run from the PE Master or Master of Masters."
   exit 2
